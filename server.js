@@ -34,6 +34,7 @@ app.get('/api/quotes', async (req, res) => {
 
   try {
     const quotes = await Promise.all(tickers.map(symbol => yahooFinance.quote(symbol)));
+    console.log(quotes);
     const stockData = quotes.map((quote, index) => ({
       ticker: tickers[index],
       price: quote.regularMarketPrice,
