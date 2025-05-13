@@ -19,6 +19,7 @@ app.get('/api/quote/:symbol', async (req, res) => {
       open: quote.regularMarketOpen,      // Preço de abertura
       high: quote.regularMarketDayHigh,   // Maior preço do dia
       low: quote.regularMarketDayLow,     // Menor preço do dia
+      close: quote.regularMarketPreviousClose, // Preço de fechamento anterior
 
     });
   } catch (error) {
@@ -42,6 +43,7 @@ app.get('/api/quotes', async (req, res) => {
       open: quote.regularMarketOpen,      // Preço de abertura
       high: quote.regularMarketDayHigh,   // Maior preço do dia
       low: quote.regularMarketDayLow,     // Menor preço do dia
+      close: quote.regularMarketPreviousClose, // Preço de fechamento anterior
     }));
     res.json(stockData);
   } catch (error) {
