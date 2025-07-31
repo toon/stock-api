@@ -20,6 +20,7 @@ app.get('/api/quote/:symbol', async (req, res) => {
       high: quote.regularMarketDayHigh,   // Maior preço do dia
       low: quote.regularMarketDayLow,     // Menor preço do dia
       close: quote.regularMarketPreviousClose, // Preço de fechamento anterior
+      regularMarketTime: quote.regularMarketTime, // Datatime da cotação
 
     });
   } catch (error) {
@@ -44,6 +45,8 @@ app.get('/api/quotes', async (req, res) => {
       high: quote.regularMarketDayHigh,   // Maior preço do dia
       low: quote.regularMarketDayLow,     // Menor preço do dia
       close: quote.regularMarketPreviousClose, // Preço de fechamento anterior
+      regularMarketTime: quote.regularMarketTime, // Datatime da cotação
+
     }));
     res.json(stockData);
   } catch (error) {
