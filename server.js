@@ -25,66 +25,88 @@ const yahooConfig = { fetchOptions: { headers: { 'User-Agent': userAgent } } };
 
 app.use(cors());
 
+// /html/body/main/div[1]/div/div[1]/div/div[1]/div/div[1]/strong
+
 // --- 1. MAPEAMENTO DE TÍTULOS (ADICIONE NOVOS AQUI) ---
 // Basta adicionar uma nova linha com o Ticker desejado e a URL correspondente
 const TESOURO_URLS = {
-    'SELIC2029': 'https://taxas-tesouro.com/resgatar/tesouro-selic-2029/',
-    'IPCA2035': 'https://taxas-tesouro.com/resgatar/tesouro-ipca+-2035/'
+  // 'SELIC2029': 'https://taxas-tesouro.com/resgatar/tesouro-selic-2029/',
+  //   IPCA2035: "https://taxas-tesouro.com/resgatar/tesouro-ipca+-2035/",
+  SELIC2029: "https://statusinvest.com.br/tesouro/tesouro-selic-2029",
+  IPCA2035: "https://statusinvest.com.br/tesouro/tesouro-ipca-2035",
 };
 
 // --- 2. FUNÇÃO GENÉRICA DE SCRAPING ---
 async function getTesouroData(ticker, url) {
     try {
-        const { data } = await axios.get(url, {
-            headers: { 'User-Agent': userAgent }
-        });
+      const { data } = await axios.get(url, {
+        headers: { "User-Agent": userAgent },
+      });
 
-        const $ = cheerio.load(data);
+      const $ = cheerio.load(data);
 
-        // Caminho baseado no seu importxml:
-        // /html/body/div/div[1]/div/div[2]/main/div/div/div[1]/div[4]/div[2]/span
-        // Como o site usa o mesmo template para ambos, o caminho é o mesmo.
-        let element = $('main')
-            .children('div').first()     // div
-            .children('div').first()     // div
-            .children('div').eq(0)       // div[1]
-            .children('div').eq(3)       // div[4]
-            .children('div').eq(1)       // div[2]
-            .find('span');               // span
+      // Caminho baseado no seu importxml:
+      // Taxas-tesouro
+      // /html/body/div/div[1]/div/div[2]/main/div/div/div[1]/div[4]/div[2]/span
+      // Status invest Tesouro Selic
+      // /html/body/main/div[1]/div/div[1]/div/div[1]/div/div[1]/strong
+      // Como o site usa o mesmo template para ambos, o caminho é o mesmo.
+      // let element = $('main')
+      //     .children('div').first()     // div
+      //     .children('div').first()     // div
+      //     .children('div').eq(0)       // div[1]
+      //     .children('div').eq(3)       // div[4]
+      //     .children('div').eq(1)       // div[2]
+      //     .find('span');               // span
+      let element = $("main")
+        .children("div")
+        .eq(0)
+        .children("div")
+        .first()
+        .children("div")
+        .eq(0)
+        .children("div")
+        .first()
+        .children("div")
+        .eq(0)
+        .children("div")
+        .first()
+        .children("div")
+        .eq(0)
+        .find("strong");
 
-        let priceText = element.text();
+      let priceText = element.text();
 
-        // Fallback de segurança se o seletor exato falhar
-        if (!priceText) {
-             priceText = $('div:contains("R$")').last().text();
-        }
+      // Fallback de segurança se o seletor exato falhar
+      if (!priceText) {
+        priceText = $('div:contains("R$")').last().text();
+      }
 
-        // Limpeza de string (R$ 1.000,00 -> 1000.00)
-        let cleanString = priceText.replace(/[^\d.,]/g, '').trim();
-        
-        if (cleanString.includes(',') && cleanString.includes('.')) {
-            cleanString = cleanString.replace(/\./g, '').replace(',', '.');
-        } else if (cleanString.includes(',')) {
-            cleanString = cleanString.replace(',', '.');
-        }
+      // Limpeza de string (R$ 1.000,00 -> 1000.00)
+      let cleanString = priceText.replace(/[^\d.,]/g, "").trim();
 
-        const price = parseFloat(cleanString);
+      if (cleanString.includes(",") && cleanString.includes(".")) {
+        cleanString = cleanString.replace(/\./g, "").replace(",", ".");
+      } else if (cleanString.includes(",")) {
+        cleanString = cleanString.replace(",", ".");
+      }
 
-        if (isNaN(price)) {
-            return { ticker, error: 'Erro de conversão', price: 0 };
-        }
+      const price = parseFloat(cleanString);
 
-        return {
-            ticker: ticker,
-            price: price,
-            changePercent: 0,
-            open: price,
-            high: price,
-            low: price,
-            close: price,
-            regularMarketTime: new Date()
-        };
+      if (isNaN(price)) {
+        return { ticker, error: "Erro de conversão", price: 0 };
+      }
 
+      return {
+        ticker: ticker,
+        price: price,
+        changePercent: 0,
+        open: price,
+        high: price,
+        low: price,
+        close: price,
+        regularMarketTime: new Date(),
+      };
     } catch (error) {
         console.error(`Erro ao ler ${ticker}:`, error.message);
         return { ticker, error: 'Falha na leitura', price: 0 };
